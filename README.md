@@ -4,9 +4,14 @@
 # Connecting
   The TH05 chip should be connected to the USB-UART converter as follows:
   
-  Adapter      Device <br>
+  Adapter      Device<br>
   GND     ->   -Vbat<br>
   +3.3V   ->   +Vbat<br>
   TX      ->    RX1<br>
   RX      ->    TX1<br>
   RTS     ->    RESET<br>
+
+
+
+po podłączeniu przewodów należy zainstalować python 3.
+
