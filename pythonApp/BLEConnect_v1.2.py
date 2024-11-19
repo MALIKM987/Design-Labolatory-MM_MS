@@ -1,6 +1,7 @@
 import asyncio
 import array
 from time import sleep
+from keyboard import is_pressed
 from bleak import BleakScanner, BleakClient
 
 UUID_DEVICE = '0000fff4-0000-1000-8000-00805f9b34fb'
@@ -41,7 +42,6 @@ async def perform_ota(client, firmware_data):
 ###########################################################
 
 smiley=5 #on,1=off
-interval=8#8=1s
 
 ###########################################3
 
@@ -55,9 +55,12 @@ async def connect(client):
             break
         except:
             print("Cannot connect. Reconnecting..")
+            await client.disconnect()
+            await asyncio.sleep(7)
             continue
         
 async def main():
+    interval = 0
     print("Searching for devices...")
     devices = await BleakScanner.discover(15.0)
 
@@ -77,22 +80,38 @@ async def main():
     client = BleakClient(target_device.address)
 
     try:
-        await connect(client)
-        
-
-        to_send = array.array('B', [85, smiley, 0, 0, 0, 63, interval, 29, 0, 2, 60, 180, 0])
-        await client.write_gatt_char(UUID_DEVICE, to_send)
-        print("Feature enabled.")
-
-        while True:
-            await get_device_info(client)
-            await asyncio.sleep(interval/8)
+        inChoice = True
+        while(inChoice):
+            await connect(client)
+            choice = 'i'
+            if(choice.lower() == 'i'):
+                interval = input("Give me an interval in seconds: ")
+                print("Setting an interval to " + interval + " seconds.")
+                interval = int(interval)
+                to_send = array.array('B', [85, smiley, 0, 0, 0, 63, interval * 8, 29, 0, 2, 60, 180, 0])
+                await client.write_gatt_char(UUID_DEVICE, to_send)
+                print("Reconection is needed.")
+                await client.disconnect()
+                print("Disconected")
+                choice = 'r'
+                continue
+            elif(choice.lower() == 'r'):
+                while True:
+                    await get_device_info(client)
+                    await asyncio.sleep(interval)
+                    if(is_pressed("e")):
+                        continue
+            elif(choice.lower() == 'q'):
+                await client.disconnect()
+                print("Disconnect")
+                break
+            else:
+                print("Wrong symbol")
+                continue
 
     except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        await client.disconnect()
-        print("Disconnected.")
+            print(f"An error occurred: {e}")
+
 
 
 
