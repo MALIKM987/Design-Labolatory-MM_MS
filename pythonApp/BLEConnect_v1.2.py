@@ -1,5 +1,6 @@
 import asyncio
 import array
+from datetime import datetime
 from time import sleep
 from keyboard import is_pressed
 from bleak import BleakScanner, BleakClient
@@ -12,8 +13,9 @@ UUID_HUMIDITY = '00002a6f-0000-1000-8000-00805f9b34fb'
 ######################################################################
 
 async def get_device_info(client):
-    print("Reading device information...")
+    now = datetime.now()
     try:
+        timeOfMeasure = now.strftime("%H:%M:%S")
         battery_level = await client.read_gatt_char(UUID_BATTERY)
         temp = await client.read_gatt_char(UUID_TEMP)
         humidity = await client.read_gatt_char(UUID_HUMIDITY)
@@ -22,7 +24,7 @@ async def get_device_info(client):
         temp = (int.from_bytes(temp, byteorder='little')) / 100
         humidity = (int.from_bytes(humidity, byteorder='little')) / 100
 
-        print('Battery: {}%; Temperature: {}°C; Humidity: {}%'.format(battery_level,temp,humidity))
+        print('{}: Battery: {}%; Temperature: {}°C; Humidity: {}% \n'.format(timeOfMeasure,battery_level,temp,humidity))
     except Exception as e:
         print(f"Error reading device info: {e}")
 
@@ -81,10 +83,14 @@ async def main():
 
     try:
         inChoice = True
+        choice = 'i'
         while(inChoice):
+            if(choice == 'q'):
+                await client.disconnect()
+                print("Disconnect")
+                break
             await connect(client)
-            choice = 'i'
-            if(choice.lower() == 'i'):
+            if(choice == 'i'):
                 interval = input("Give me an interval in seconds: ")
                 print("Setting an interval to " + interval + " seconds.")
                 interval = int(interval)
@@ -95,20 +101,18 @@ async def main():
                 print("Disconected")
                 choice = 'r'
                 continue
-            elif(choice.lower() == 'r'):
+            elif(choice == 'r'):
+                print("To quit program press and hold 'q' button.")
+                print("To come back to selection of an interval press and hold 'r' button")
                 while True:
                     await get_device_info(client)
-                    await asyncio.sleep(interval)
-                    if(is_pressed("e")):
-                        continue
-            elif(choice.lower() == 'q'):
-                await client.disconnect()
-                print("Disconnect")
-                break
-            else:
-                print("Wrong symbol")
-                continue
-
+                    sleep(interval)
+                    if(is_pressed('q')):
+                        choice = 'q'
+                        break
+                    if(is_pressed('r')):
+                        choice = 'i'
+                        break
     except Exception as e:
             print(f"An error occurred: {e}")
 
