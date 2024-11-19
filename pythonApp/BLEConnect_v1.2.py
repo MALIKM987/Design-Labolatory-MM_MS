@@ -1,7 +1,7 @@
 import asyncio
 import array
 from datetime import datetime
-from time import sleep
+from time import sleep              #52
 from keyboard import is_pressed
 from bleak import BleakScanner, BleakClient
 
@@ -9,26 +9,26 @@ from bleak import BleakScanner, BleakClient
 UUID_DEVICE = '0000fff4-0000-1000-8000-00805f9b34fb'
 UUID_BATTERY = '00002a19-0000-1000-8000-00805f9b34fb'
 UUID_TEMP = '00002a6e-0000-1000-8000-00805f9b34fb'
-UUID_HUMIDITY = '00002a6f-0000-1000-8000-00805f9b34fb'
+UUID_HUMIDITY = '00002a6f-0000-1000-8000-00805f9b34fb'      #6E
 
 ######################################################################
 
 #function for getting the data
 async def get_device_info(client):
     now = datetime.now() #current time
-    try:
+    try:            #56
         timeOfMeasure = now.strftime("%H:%M:%S")
         battery_level = await client.read_gatt_char(UUID_BATTERY)   #current battery lvl
         temp = await client.read_gatt_char(UUID_TEMP)               #current temperature
         humidity = await client.read_gatt_char(UUID_HUMIDITY)       #current humidity
 
-        battery_level = int.from_bytes(battery_level, byteorder='little')
+        battery_level = int.from_bytes(battery_level, byteorder='little')       #6A
         temp = (int.from_bytes(temp, byteorder='little')) / 100
         humidity = (int.from_bytes(humidity, byteorder='little')) / 100
         #data conversion from binaries to readable data 
 
         print('{}: Battery: {}%; Temperature: {}°C; Humidity: {}% \n'.format(timeOfMeasure,battery_level,temp,humidity))
-    except Exception as e:
+    except Exception as e:          #61
         print(f"Error reading device info: {e}")
 
 ###########################################################
@@ -38,65 +38,64 @@ smiley=5 #on,1=off
 ###########################################3
 
 #function used to connect to the device
-async def connect(client):
+async def connect(client):      #79
     while(True):
         await client.disconnect()
         try:
             print("Connecting to the device...")
             await client.connect()
-            print("Connected.")
+            print("Connected.")     #42
             break
         except:
             print("Cannot connect. Reconnecting..")
             await client.disconnect()
             await asyncio.sleep(7)  #waits 7 seconds to fully disconect
-            continue
+            continue                #51
         
 async def main():
     interval = 0    #current interval
     #device search
-    print("Searching for devices...")
+    print("Searching for devices...")       #65
     devices = await BleakScanner.discover(15.0)
 
     device_name = 'TH05F-582134'
-    target_device = None
+    target_device = None                #58
 
     for device in devices:
         if device.name == device_name:
             target_device = device
-            break
+            break                       #52
 
     if not target_device:
         print(f"Device '{device_name}' not found.")
         return
 
-    print(f"Found device: {target_device.address}")
+    print(f"Found device: {target_device.address}")     #6F
     client = BleakClient(target_device.address)
 
     #Interval selection and retrieving data
     try:
         inChoice = True
-        choice = 'i'
+        choice = 'i'            #62
         while(inChoice):
             if(choice == 'q'):  #program quitting and disconnecting
                 print("Disconnecting")
                 await client.disconnect()
                 print("Disconnect")
-                break
+                break               #32
             await connect(client)
             if(choice == 'i'):  #interval selection
                 interval = input("Give me an interval in seconds: ")
                 print("Setting an interval to " + interval + " seconds.")
                 interval = float(interval)
-                to_send = array.array('B', [85, smiley, 0, 0, 0, 63, 
-                                    interval * 8, 29, 0, 2, 60, 180, 0]) #array to send
+                to_send = array.array('B', [85, smiley, 0, 0, 0, 63, interval * 8, 29, 0, 2, 60, 180, 0]) #array to send
 
                 await client.write_gatt_char(UUID_DEVICE, to_send)
                 print("Reconection is needed.")
                 await client.disconnect()
                 print("Disconected")        #performing reconection to set up a new interval
                 choice = 'r'
-                continue
+                continue                    #34
             elif(choice == 'r'): #retrieving data
                 print("To quit program press and hold 'q' button.")
                 print("To come back to selection of an interval press and hold 'r' button")
@@ -105,7 +104,7 @@ async def main():
                     sleep(interval)             #data
                     if(is_pressed('q')):        #quitting the program
                         print("Quitting...")
-                        choice = 'q'
+                        choice = 'q'            #3D
                         break
                     if(is_pressed('r')):        #going back to change the interval
                         print("Comming back...")
