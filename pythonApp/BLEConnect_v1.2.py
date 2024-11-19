@@ -87,7 +87,7 @@ async def main():
             if(choice == 'i'):  #interval selection
                 interval = input("Give me an interval in seconds: ")
                 print("Setting an interval to " + interval + " seconds.")
-                interval = float(interval)
+                interval = int(interval)
                 to_send = array.array('B', [85, smiley, 0, 0, 0, 63, interval * 8, 29, 0, 2, 60, 180, 0]) #array to send
 
                 await client.write_gatt_char(UUID_DEVICE, to_send)
@@ -99,6 +99,7 @@ async def main():
             elif(choice == 'r'): #retrieving data
                 print("To quit program press and hold 'q' button.")
                 print("To come back to selection of an interval press and hold 'r' button")
+                sleep(3)
                 while True:
                     await get_device_info(client)
                     sleep(interval)             #data
