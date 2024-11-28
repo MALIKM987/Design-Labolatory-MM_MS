@@ -41,6 +41,18 @@ Boot flashing is complete. The device is operational and the adapter can be disc
 
 All of files and programs used to program the device and also all of the binaries where written by [pvvx](https://github.com/pvvx) and you can find it (as well as files to 
 other chinese BTHome devices) on [his repo](https://github.com/pvvx/THB2). <br>
+Now you have to flash a proper firmware into device. To do this you should:
+1. Open the website - [PHY62x2BTHome.html](https://pvvx.github.io/THB2/web/PHY62x2BTHome.html),
+2. Connect to the device via it,
+3. Go to `OTA` tab, select the proper `.bin` file,
+4. Click `Start`
+After this, the firmware should be flashed.
+
+Alternatively, you could do this via UART adapter. By connecting the device into it and running this command:
+```
+python3 rdwr_phy62x2.py -p COM11 -r we 0x10000 TH05_v19.bin
+```
+in your command prompt. Of course instead of `COM11` you should write the port curently used by the connected adapter. 
 # Retrieving and Sending Data via Bluetooth
 It is posible to comunicate with the device via Bluetooth. To do this we could either go to the [PHY62x2BTHome.html](https://pvvx.github.io/THB2/web/PHY62x2BTHome.html) website, written by 
 the previous mentioned author or we could use a python code from this repo. <br>
